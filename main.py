@@ -27,6 +27,12 @@ if not RENDER_URL:
 print("BOT_TOKEN:", os.getenv("BOT_TOKEN"))
 print("RENDER_URL:", os.getenv("RENDER_EXTERNAL_URL"))
 
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    if not update.message or not update.message.text:
+        return
+        
+print("HANDLER TRIGGERED")
 # =========================
 # RENDER WEBHOOK URL
 # =========================
@@ -375,3 +381,4 @@ if __name__ == "__main__":
 print("USER:", user)
 print("MSG:", msg)
 print("LEVEL:", level)
+print("RAW MESSAGE:", update.message.text)

@@ -1,5 +1,5 @@
 from flask import Flask, request
-from telegram import Update
+from telegram import application
 from telegram.ext import (
     Application,
     MessageHandler,

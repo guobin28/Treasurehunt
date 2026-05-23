@@ -22,6 +22,9 @@ if not TOKEN:
 if not RENDER_URL:
     raise Exception("RENDER_EXTERNAL_URL is missing")
 
+print("BOT_TOKEN:", os.getenv("BOT_TOKEN"))
+print("RENDER_URL:", os.getenv("RENDER_EXTERNAL_URL"))
+
 # =========================
 # RENDER WEBHOOK URL
 # =========================
@@ -343,10 +346,17 @@ def home():
 # =========================
 # MAIN
 # =========================
-if __name__ == "__main__":
-    import asyncio
-    asyncio.run(setup_webhook())
 
+if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
+
+    import threading
+
+    def run_setup():
+        import asyncio
+        asyncio.run(setup_webhook())
+
+    threading.Thread(target=run_setup).start()
+
     flask_app.run(host="0.0.0.0", port=port)
 

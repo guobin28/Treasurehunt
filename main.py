@@ -5,6 +5,8 @@ from telegram.ext import (
     MessageHandler,
     filters,
     ContextTypes,
+    CommandHandler, 
+    ContextTypes
 )
 import os
 import re
@@ -336,6 +338,16 @@ def webhook():
 
     return "ok", 200
 
+async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = str(update.effective_user.id)
+    players[user] = 0
+
+    await update.message.reply_text(
+        "🔄 Game restarted!\n\n" + game[0]["clue"]
+    )
+    
+application.add_handler(CommandHandler("restart", restart))
+
 # =========================
 # HEALTH CHECK
 # =========================
@@ -360,3 +372,6 @@ if __name__ == "__main__":
 
     flask_app.run(host="0.0.0.0", port=port)
 
+print("USER:", user)
+print("MSG:", msg)
+print("LEVEL:", level)

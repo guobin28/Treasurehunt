@@ -1,10 +1,9 @@
 from flask import Flask, request
-from telegram import application
 from telegram.ext import (
-    Application,
+    ApplicationBuilder,
     MessageHandler,
-    ContextTypes,
     filters,
+    ContextTypes,
 )
 import os
 import re
@@ -302,40 +301,70 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # =========================
-# TELEGRAM APPLICATION
+# BUILD TELEGRAM APP
 # =========================
-application = Application.builder().token(TOKEN).build()
+application = ApplicationBuilder().token(TOKEN).build()
 
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = str(update.effective_user.id)
+    msg = normalize(update.message.text)
+
+    if user not in players:
+        players[user] = 0
+        await update.message.reply_text(game[0]["clue"])
+        return
+
+    level = players[user]
+
+    if level >= len(game):
+        await update.message.reply_text("🎉 You finished the game!")
+        return
+
+    level_data = game[level]
+    answers = [normalize(a) for a in level_data["answer"]]
+
+    if msg in answers:
+        players[user] += 1
+        new_level = players[user]
+
+        if new_level < len(game):
+            await update.message.reply_text(
+                "✅ Correct!\n\n" +
+                level_data["success"] +
+                "\n\n" +
+                game[new_level]["clue"]
+            )
+        else:
+            await update.message.reply_text("🏆 Game completed!")
+    else:
+        await update.message.reply_text("❌ Wrong answer. Try again!")
+
+# register handler
 application.add_handler(
     MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
 )
 
-
 # =========================
-# STARTUP
+# STARTUP (set webhook)
 # =========================
-async def setup():
+async def setup_webhook():
     await application.initialize()
     await application.start()
     await application.bot.set_webhook(WEBHOOK_URL)
 
-
-asyncio.get_event_loop().run_until_complete(setup())
-
-
 # =========================
-# WEBHOOK ROUTE
+# FLASK WEBHOOK ROUTE
 # =========================
 @flask_app.post(WEBHOOK_PATH)
 def webhook():
-    update = Update.de_json(request.get_json(force=True), application.bot)
+    data = request.get_json(force=True)
+    update = Update.de_json(data, application.bot)
 
-    asyncio.get_event_loop().create_task(
-        application.process_update(update)
-    )
+    # safe execution for Render
+    import asyncio
+    asyncio.run(application.process_update(update))
 
     return "ok", 200
-
 
 # =========================
 # HEALTH CHECK
@@ -344,10 +373,13 @@ def webhook():
 def home():
     return "Bot is running!"
 
-
 # =========================
-# RUN FLASK
+# MAIN
 # =========================
 if __name__ == "__main__":
+    import asyncio
+    asyncio.run(setup_webhook())
+
     port = int(os.environ.get("PORT", 10000))
     flask_app.run(host="0.0.0.0", port=port)
+

@@ -14,6 +14,13 @@ import asyncio
 # TOKEN
 # =========================
 TOKEN = os.getenv("BOT_TOKEN")
+RENDER_URL = os.getenv("RENDER_EXTERNAL_URL")
+
+if not TOKEN:
+    raise Exception("BOT_TOKEN is missing in Render environment variables")
+
+if not RENDER_URL:
+    raise Exception("RENDER_EXTERNAL_URL is missing")
 
 # =========================
 # RENDER WEBHOOK URL

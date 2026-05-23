@@ -1,4 +1,5 @@
 from flask import Flask, request
+from telegram import Update
 from telegram.ext import (
     ApplicationBuilder,
     MessageHandler,
@@ -259,47 +260,6 @@ game = [
     }
 ]
 
-
-# =========================
-# BOT LOGIC
-# =========================
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = str(update.effective_user.id)
-    msg = normalize(update.message.text)
-
-    if user not in players:
-        players[user] = 0
-        await update.message.reply_text(game[0]["clue"])
-        return
-
-    level = players[user]
-
-    if level >= len(game):
-        await update.message.reply_text("🎉 You finished the game!")
-        return
-
-    level_data = game[level]
-
-    answers = [normalize(a) for a in level_data["answer"]]
-
-    if msg in answers:
-        players[user] += 1
-        new_level = players[user]
-
-        if new_level < len(game):
-            await update.message.reply_text(
-                "✅ Correct!\n\n"
-                + level_data["success"]
-                + "\n\n"
-                + game[new_level]["clue"]
-            )
-        else:
-            await update.message.reply_text("🏆 Game completed!")
-    else:
-        await update.message.reply_text("❌ Wrong answer. Try again!")
-
-
-
 # =========================
 # BUILD TELEGRAM APP
 # =========================
@@ -335,7 +295,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 game[new_level]["clue"]
             )
         else:
-            await update.message.reply_text("🏆 Game completed!")
+            await update.message.reply_text("🏆 Game completed! Hope you like it!")
     else:
         await update.message.reply_text("❌ Wrong answer. Try again!")
 

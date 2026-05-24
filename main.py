@@ -11,7 +11,7 @@ from telegram.ext import (
 import os
 import re
 import asyncio
-asyncio.run(application.bot.set_webhook(WEBHOOK_URL))
+
 
 # =========================
 # TOKEN
@@ -34,6 +34,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
         
 print("HANDLER TRIGGERED")
+
+
+
 # =========================
 # RENDER WEBHOOK URL
 # =========================
@@ -283,6 +286,8 @@ game = [
 # BUILD TELEGRAM APP
 # =========================
 application = ApplicationBuilder().token(TOKEN).build()
+
+asyncio.run(application.bot.set_webhook(WEBHOOK_URL))
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = str(update.effective_user.id)

@@ -11,6 +11,7 @@ from telegram.ext import (
 import os
 import re
 import asyncio
+asyncio.run(application.bot.set_webhook(WEBHOOK_URL))
 
 # =========================
 # TOKEN
@@ -334,13 +335,12 @@ async def setup_webhook():
 # FLASK WEBHOOK ROUTE
 # =========================
 @flask_app.post(WEBHOOK_PATH)
+
 def webhook():
     data = request.get_json(force=True)
     update = Update.de_json(data, application.bot)
 
-    # safe execution for Render
-    import asyncio
-    asyncio.run(application.process_update(update))
+    application.update_queue.put_nowait(update)
 
     return "ok", 200
 
@@ -367,15 +367,6 @@ def home():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
-
-    import threading
-
-    def run_setup():
-        import asyncio
-        asyncio.run(setup_webhook())
-
-    threading.Thread(target=run_setup).start()
-
     flask_app.run(host="0.0.0.0", port=port)
 
 print("USER:", user)
